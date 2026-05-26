@@ -232,4 +232,42 @@ describe('App Component', () => {
     fireEvent.click(themToggleAfter);
     expect(localStorage.getItem('todoAppTheme')).toBe('light');
   });
+
+  describe('currentDate interval for overdue re-evaluation', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    test('sets up a 60-second interval to re-evaluate overdue status', async () => {
+      const setIntervalSpy = jest.spyOn(global, 'setInterval');
+      render(<App />);
+
+      await waitFor(() => {
+        expect(screen.queryByText('Loading your todos...')).not.toBeInTheDocument();
+      });
+
+      const intervalCall = setIntervalSpy.mock.calls.find(call => call[1] === 60000);
+      expect(intervalCall).toBeDefined();
+
+      setIntervalSpy.mockRestore();
+    });
+
+    test('clears the interval on unmount to prevent memory leaks', async () => {
+      const clearIntervalSpy = jest.spyOn(global, 'clearInterval');
+      const { unmount } = render(<App />);
+
+      await waitFor(() => {
+        expect(screen.queryByText('Loading your todos...')).not.toBeInTheDocument();
+      });
+
+      unmount();
+      expect(clearIntervalSpy).toHaveBeenCalled();
+
+      clearIntervalSpy.mockRestore();
+    });
+  });
 });

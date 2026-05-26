@@ -155,4 +155,43 @@ describe('TodoForm Component', () => {
     
     expect(screen.queryByText('Todo title cannot be empty')).not.toBeInTheDocument();
   });
+
+  describe('Overdue badge', () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    it('should render overdue badge when todo is past due and incomplete', () => {
+      const overdueTodo = { completed: false, dueDate: yesterdayStr };
+      render(<TodoForm onSubmit={mockOnSubmit} isLoading={false} todo={overdueTodo} />);
+
+      const badge = screen.getByLabelText('Overdue');
+      expect(badge).toBeInTheDocument();
+      expect(badge).toHaveClass('overdue-badge');
+    });
+
+    it('should not render overdue badge when due date is today', () => {
+      const todayTodo = { completed: false, dueDate: todayStr };
+      render(<TodoForm onSubmit={mockOnSubmit} isLoading={false} todo={todayTodo} />);
+
+      expect(screen.queryByLabelText('Overdue')).not.toBeInTheDocument();
+    });
+
+    it('should not render overdue badge when todo is completed and past due', () => {
+      const completedOverdueTodo = { completed: true, dueDate: yesterdayStr };
+      render(<TodoForm onSubmit={mockOnSubmit} isLoading={false} todo={completedOverdueTodo} />);
+
+      expect(screen.queryByLabelText('Overdue')).not.toBeInTheDocument();
+    });
+
+    it('should not render overdue badge when dueDate is null', () => {
+      const noDateTodo = { completed: false, dueDate: null };
+      render(<TodoForm onSubmit={mockOnSubmit} isLoading={false} todo={noDateTodo} />);
+
+      expect(screen.queryByLabelText('Overdue')).not.toBeInTheDocument();
+    });
+  });
 });

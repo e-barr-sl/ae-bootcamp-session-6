@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { isOverdue } from '../utils/overdueUtils';
 
-function TodoForm({ onSubmit, isLoading }) {
+function TodoForm({ onSubmit, isLoading, todo }) {
   const [title, setTitle] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [error, setError] = useState(null);
@@ -37,6 +38,9 @@ function TodoForm({ onSubmit, isLoading }) {
 
   return (
     <form onSubmit={handleSubmit} className="todo-form">
+      {todo && isOverdue(todo) && (
+        <span className="overdue-badge" aria-label="Overdue" style={{ color: 'var(--warning-color)', fontSize: '12px', fontWeight: 600 }}>Overdue</span>
+      )}
       <div className="form-group">
         <input
           type="text"

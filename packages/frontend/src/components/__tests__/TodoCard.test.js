@@ -99,4 +99,57 @@ describe('TodoCard Component', () => {
     
     expect(screen.queryByText(/Due:/)).not.toBeInTheDocument();
   });
+
+  describe('Overdue badge', () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    it('should render overdue badge when todo is past due and incomplete', () => {
+      const overdueTodo = { ...mockTodo, dueDate: yesterdayStr, completed: 0 };
+      render(<TodoCard todo={overdueTodo} {...mockHandlers} isLoading={false} />);
+
+      const badge = screen.getByLabelText('Overdue');
+      expect(badge).toBeInTheDocument();
+      expect(badge).toHaveClass('overdue-badge');
+    });
+
+    it('should not render overdue badge when due date is today', () => {
+      const todayTodo = { ...mockTodo, dueDate: todayStr, completed: 0 };
+      render(<TodoCard todo={todayTodo} {...mockHandlers} isLoading={false} />);
+
+      expect(screen.queryByLabelText('Overdue')).not.toBeInTheDocument();
+    });
+
+    it('should not render overdue badge when todo is completed and past due', () => {
+      const completedOverdueTodo = { ...mockTodo, dueDate: yesterdayStr, completed: 1 };
+      render(<TodoCard todo={completedOverdueTodo} {...mockHandlers} isLoading={false} />);
+
+      expect(screen.queryByLabelText('Overdue')).not.toBeInTheDocument();
+    });
+
+    it('should not render overdue badge when dueDate is null', () => {
+      const noDateTodo = { ...mockTodo, dueDate: null, completed: 0 };
+      render(<TodoCard todo={noDateTodo} {...mockHandlers} isLoading={false} />);
+
+      expect(screen.queryByLabelText('Overdue')).not.toBeInTheDocument();
+    });
+
+    it('should render overdue badge inside edit form when in edit mode and overdue', () => {
+      const overdueTodo = { ...mockTodo, dueDate: yesterdayStr, completed: 0 };
+      render(<TodoCard todo={overdueTodo} {...mockHandlers} isLoading={false} />);
+
+      const editButton = screen.getByLabelText(/Edit/);
+      fireEvent.click(editButton);
+
+      const editForm = document.querySelector('.edit-form');
+      expect(editForm).toBeInTheDocument();
+      const badge = screen.getByLabelText('Overdue');
+      expect(badge).toBeInTheDocument();
+      expect(editForm).toContainElement(badge);
+    });
+  });
 });
